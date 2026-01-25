@@ -1,0 +1,1894 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pautan Link SK Adin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { box-sizing: border-box; margin: 0; height: 100%; }
+    html { height: 100%; }
+    .hidden { display: none !important; }
+    
+    .mobile-frame {
+      width: 100%;
+      max-width: 160px;
+      height: auto;
+      aspect-ratio: 1 / 2;
+      max-height: 320px;
+      border: 4px solid #1f2937;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    @media (min-width: 768px) {
+      .mobile-frame { border: 6px solid #1f2937; border-radius: 18px; }
+    }
+    
+    .mobile-frame::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 8px;
+      background: #1f2937;
+      border-radius: 0 0 6px 6px;
+      z-index: 10;
+    }
+    
+    @media (min-width: 768px) {
+      .mobile-frame::before { width: 60px; height: 12px; border-radius: 0 0 8px 8px; }
+    }
+    
+    .mobile-content {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      padding-top: 12px;
+      font-size: 8px;
+    }
+    
+    @media (min-width: 768px) {
+      .mobile-content { padding-top: 16px; }
+    }
+    
+    .link-item {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .link-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .nav-item {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .nav-item:hover { background-color: #f3f4f6; }
+    
+    .nav-item.active {
+      background-color: #dbeafe;
+      color: #1e40af;
+      font-weight: 600;
+    }
+    
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background-color: #d1d5db;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .toggle-switch.active { background-color: #3b82f6; }
+    
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+    
+    .toggle-switch.active::after { transform: translateX(20px); }
+    
+    .public-view-container {
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    
+    .public-view-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .public-view-container::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .public-view-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+    
+    .public-view-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  
+  <!-- Initial Loading Spinner -->
+  <div id="initialLoading" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="spinner mb-4"></div>
+      <p class="text-gray-600 text-lg font-semibold">Memuatkan...</p>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="text-center">
+      <div class="spinner mb-4"></div>
+      <p id="loadingMessage" class="text-white text-lg font-semibold">Memuatkan...</p>
+    </div>
+  </div>
+
+  <!-- Public View -->
+  <div id="publicView" class="fixed inset-0 hidden">
+    <div class="public-view-container">
+      <div class="flex items-center justify-center min-h-full py-8">
+        <!-- Lock Icon Button -->
+        <button id="lockIconBtn" class="fixed bottom-6 right-6 w-12 h-12 bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-lg transition-all z-50">
+          <i class="fas fa-lock text-xl"></i>
+        </button>
+        
+        <div class="w-full max-w-md px-6 text-center">
+          <!-- Avatar -->
+          <div id="publicAvatar" class="w-24 h-24 mx-auto mb-4 flex items-center justify-center overflow-hidden rounded-full bg-gray-300">
+            <i class="fas fa-user text-gray-500 text-3xl"></i>
+          </div>
+          
+          <!-- Title -->
+          <h2 id="publicTitle" class="text-2xl font-bold mb-2 text-white">SK ADIN</h2>
+          
+          <!-- Description -->
+          <p id="publicDescription" class="text-sm mb-8 text-white opacity-90"></p>
+          
+          <!-- Categories & Links Container -->
+          <div id="publicCategoriesContainer" class="space-y-6"></div>
+          
+          <!-- Empty State -->
+          <div id="publicEmptyState" class="text-center py-12 hidden">
+            <i class="fas fa-link text-6xl mb-4 text-white opacity-30"></i>
+            <p class="text-lg font-semibold text-white opacity-70">Tiada pautan tersedia.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-96">
+      <div class="text-center mb-6">
+        <i class="fas fa-lock text-blue-600 text-4xl mb-4"></i>
+        <h2 class="text-2xl font-bold text-gray-800">Selamat Kembali</h2>
+        <p class="text-gray-600 mt-2">Masukkan kata laluan untuk akses panel admin</p>
+      </div>
+      
+      <form id="loginForm">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-semibold mb-2">Kata Laluan</label>
+          <input type="password" id="passwordInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan kata laluan" required>
+        </div>
+        
+        <div id="loginError" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg hidden">
+          <p class="text-red-600 text-sm">Kata laluan salah. Sila cuba lagi.</p>
+        </div>
+        
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold">Log Masuk</button>
+        <button type="button" id="cancelLoginBtn" class="w-full mt-2 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors font-semibold">Batal</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="adminDashboard" class="flex flex-col hidden" style="height: 100%;">
+    <!-- Top Header -->
+    <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-database text-green-600"></i>
+          <span class="font-mono text-sm text-green-600">Google Sheets (Auto-sync)</span>
+        </div>
+      </div>
+      <button id="viewLiveBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
+        <i class="fas fa-eye"></i> Lihat Laman Web
+      </button>
+    </div>
+    
+    <div class="flex flex-1" style="min-height: 0;">
+      <!-- Sidebar -->
+      <div class="w-64 bg-white border-r border-gray-200 flex flex-col" style="height: 100%;">
+        <div class="p-6 border-b border-gray-200">
+          <h1 class="text-xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-link text-blue-600 mr-2"></i>
+            <span>Pautan Link SK Adin</span>
+          </h1>
+        </div>
+        
+        <nav class="flex-1 p-4">
+          <button class="nav-item w-full text-left px-4 py-3 rounded-lg mb-2 flex items-center active" data-tab="main">
+            <i class="fas fa-home mr-3"></i> Utama
+          </button>
+          <button class="nav-item w-full text-left px-4 py-3 rounded-lg mb-2 flex items-center" data-tab="links">
+            <i class="fas fa-link mr-3"></i> Pautan
+          </button>
+          <button class="nav-item w-full text-left px-4 py-3 rounded-lg mb-2 flex items-center" data-tab="appearance">
+            <i class="fas fa-palette mr-3"></i> Rupa
+          </button>
+          <button class="nav-item w-full text-left px-4 py-3 rounded-lg mb-2 flex items-center" data-tab="bulk">
+            <i class="fas fa-table mr-3"></i> Edit Link Pukal
+          </button>
+          <button class="nav-item w-full text-left px-4 py-3 rounded-lg mb-2 flex items-center" data-tab="categories">
+            <i class="fas fa-folder mr-3"></i> Pautan Kategori
+          </button>
+        </nav>
+        
+        <div class="p-4 border-t border-gray-200">
+          <button id="logoutBtn" class="w-full text-left px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 flex items-center">
+            <i class="fas fa-sign-out-alt mr-3"></i> Log Keluar
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="flex-1 overflow-y-auto p-8">
+        
+        <!-- MAIN TAB -->
+        <div id="mainTab" class="tab-content">
+          <h2 class="text-3xl font-bold text-gray-800 mb-6">Papan Pemuka</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-600 text-sm">Jumlah Pautan</p>
+                  <p id="statTotalLinks" class="text-3xl font-bold text-gray-800">0</p>
+                </div>
+                <i class="fas fa-link text-blue-600 text-3xl"></i>
+              </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-600 text-sm">Pautan Aktif</p>
+                  <p id="statActiveLinks" class="text-3xl font-bold text-gray-800">0</p>
+                </div>
+                <i class="fas fa-check-circle text-green-600 text-3xl"></i>
+              </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-600 text-sm">Jumlah Kategori</p>
+                  <p id="statTotalCategories" class="text-3xl font-bold text-gray-800">0</p>
+                </div>
+                <i class="fas fa-folder text-purple-600 text-3xl"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Pautan Anda</h3>
+            <div id="linksTableContainer"></div>
+          </div>
+          
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Tindakan Pantas</h3>
+            <div class="space-y-3">
+              <button class="quick-action-btn w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg flex items-center transition-colors" data-tab="links">
+                <i class="fas fa-plus-circle text-blue-600 mr-3"></i>
+                <span class="text-gray-800">Tambah Pautan Baharu</span>
+              </button>
+              <button class="quick-action-btn w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg flex items-center transition-colors" data-tab="categories">
+                <i class="fas fa-folder-plus text-purple-600 mr-3"></i>
+                <span class="text-gray-800">Urus Kategori</span>
+              </button>
+              <button class="quick-action-btn w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg flex items-center transition-colors" data-tab="appearance">
+                <i class="fas fa-paint-brush text-green-600 mr-3"></i>
+                <span class="text-gray-800">Ubah Rupa</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LINKS TAB -->
+        <div id="linksTab" class="tab-content hidden">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-800">Pengurusan Pautan</h2>
+            <div class="flex gap-2">
+              <button id="saveLinksBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                <i class="fas fa-save mr-2"></i> Simpan
+              </button>
+              <button id="addLinkBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                <i class="fas fa-plus mr-2"></i> Tambah Pautan
+              </button>
+            </div>
+          </div>
+          <div id="linksEditorContainer"></div>
+        </div>
+
+        <!-- APPEARANCE TAB -->
+        <div id="appearanceTab" class="tab-content hidden">
+          <h2 class="text-3xl font-bold text-gray-800 mb-6">Ubah Rupa</h2>
+          
+          <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Avatar Profil</h3>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-semibold mb-2">URL Gambar Avatar</label>
+              <div class="flex items-center gap-4">
+                <div id="avatarPreview" class="w-20 h-20 flex items-center justify-center overflow-hidden rounded-full bg-gray-200">
+                  <img src="https://i.postimg.cc/qBcGF2Ww/Logo-SK-Adin.png" alt="Avatar" class="w-full h-full object-cover" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-user text-gray-400 text-3xl\'></i>';">
+                </div>
+                <div class="flex-1">
+                  <input type="url" id="avatarUrlInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://example.com/image.png" value="https://i.postimg.cc/qBcGF2Ww/Logo-SK-Adin.png">
+                  <p class="text-sm text-gray-500 mt-2">Masukkan URL gambar (contoh: https://i.postimg.cc/...)</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-semibold mb-2">Bentuk Avatar</label>
+              <div class="flex gap-3">
+                <button id="shapeCircleBtn" class="avatar-shape-btn px-4 py-2 rounded-lg font-semibold transition-colors bg-blue-600 text-white" data-shape="circle">
+                  <i class="fas fa-circle mr-2"></i> Bulat
+                </button>
+                <button id="shapeSquareBtn" class="avatar-shape-btn px-4 py-2 rounded-lg font-semibold transition-colors bg-gray-200 text-gray-700" data-shape="square">
+                  <i class="fas fa-square mr-2"></i> Segi Empat
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Maklumat Profil</h3>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-semibold mb-2">Tajuk Halaman</label>
+              <input type="text" id="pageTitleInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nama atau Jenama Anda">
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-semibold mb-2">Penerangan</label>
+              <textarea id="descriptionInput" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Beritahu pengunjung tentang anda"></textarea>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Gaya Halaman</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-gray-700 text-sm font-semibold mb-2">Warna Latar Belakang</label>
+                <div class="flex gap-2">
+                  <input type="color" id="bgColorPicker" class="w-16 h-10 border border-gray-300 rounded cursor-pointer">
+                  <input type="text" id="bgColorInput" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="#f3f4f6">
+                </div>
+              </div>
+              <div>
+                <label class="block text-gray-700 text-sm font-semibold mb-2">Warna Teks</label>
+                <div class="flex gap-2">
+                  <input type="color" id="textColorPicker" class="w-16 h-10 border border-gray-300 rounded cursor-pointer">
+                  <input type="text" id="textColorInput" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="#000000">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BULK LINKS TAB -->
+        <div id="bulkTab" class="tab-content hidden">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h2 class="text-3xl font-bold text-gray-800">Edit Link Pukal</h2>
+              <p class="text-gray-600 mt-1">Edit semua pautan secara pukal dalam format jadual</p>
+            </div>
+            <div class="flex gap-2">
+              <button id="addBulkRowBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                <i class="fas fa-plus mr-2"></i> Tambah Baris
+              </button>
+              <button id="saveBulkBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                <i class="fas fa-save mr-2"></i> Simpan
+              </button>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full" id="bulkLinksTable">
+                <thead class="bg-gray-50 border-b-2 border-gray-200">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Susunan</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Aktif</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase" style="min-width: 150px;">Kategori</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase" style="min-width: 200px;">Tajuk</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Pautan</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Warna</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Warna Teks</th>
+                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="bulkLinksTableBody"></tbody>
+              </table>
+            </div>
+            
+            <div id="bulkEmptyState" class="text-center py-12 hidden">
+              <i class="fas fa-table text-gray-300 text-6xl mb-4"></i>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Tiada pautan lagi</h3>
+              <p class="text-gray-600 mb-6">Mulakan dengan menambah pautan pertama anda</p>
+              <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 inline-flex items-center" onclick="addBulkRow()">
+                <i class="fas fa-plus mr-2"></i> Tambah Pautan Pertama
+              </button>
+            </div>
+          </div>
+          
+          <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-start">
+              <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+              <div class="text-sm text-blue-800">
+                <p class="font-semibold mb-1">Tips:</p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Gunakan butang ⬆️⬇️ untuk menyusun kedudukan pautan</li>
+                  <li>Semua perubahan akan auto-sync dengan Google Sheets</li>
+                  <li>Klik "Simpan" untuk simpan semua perubahan sekaligus</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CATEGORIES TAB -->
+        <div id="categoriesTab" class="tab-content hidden">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h2 class="text-3xl font-bold text-gray-800">Pautan Kategori</h2>
+              <p class="text-gray-600 mt-1">Susun pautan anda mengikut kategori untuk paparan yang lebih teratur</p>
+            </div>
+            <div class="flex gap-2">
+              <button id="saveCategoriesBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                <i class="fas fa-save mr-2"></i> Simpan
+              </button>
+              <button id="addCategoryBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                <i class="fas fa-plus mr-2"></i> Tambah Kategori
+              </button>
+            </div>
+          </div>
+          
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div class="flex items-start">
+              <i class="fas fa-lightbulb text-yellow-600 mt-1 mr-3"></i>
+              <div class="text-sm text-yellow-800">
+                <p class="font-semibold mb-1">Cara Guna Kategori:</p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Aktifkan kategori untuk memaparkan pautan ikut kumpulan</li>
+                  <li>Kategori tidak aktif tidak akan dipaparkan di laman web</li>
+                  <li>Assign kategori ke pautan di tab "Edit Link Pukal"</li>
+                  <li>Pautan tanpa kategori akan dipaparkan di bahagian atas</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div id="categoriesListContainer"></div>
+        </div>
+        
+      </div>
+
+      <!-- Preview Panel -->
+      <div class="w-64 bg-gray-100 p-3 flex items-start justify-center" style="height: 100%; overflow-y: auto;">
+        <div class="sticky top-3 w-full">
+          <h3 class="text-sm font-bold text-gray-800 mb-2 text-center">Pratonton</h3>
+          <div class="mobile-frame w-full" style="max-width: 160px; margin: 0 auto;">
+            <div id="previewContent" class="mobile-content bg-gray-100">
+              <div class="px-3 py-2 text-center">
+                <div id="previewAvatar" class="w-12 h-12 mx-auto mb-2 flex items-center justify-center overflow-hidden rounded-full bg-gray-300">
+                  <i class="fas fa-user text-gray-500 text-base"></i>
+                </div>
+                <h2 id="previewTitle" class="text-xs font-bold mb-1 text-gray-800">@username</h2>
+                <p id="previewDescription" class="text-[6px] mb-3 text-gray-600"></p>
+                <div id="previewCategoriesContainer" class="space-y-2"></div>
+                <div id="previewEmptyState" class="text-center py-4">
+                  <p class="text-[6px] text-gray-500">Tiada pautan aktif lagi</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="notificationToast" class="fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 hidden">
+    <p id="notificationMessage" class="text-white font-semibold"></p>
+  </div>
+  
+  <script>
+    // ========================================
+    // GOOGLE APPS SCRIPT WEB APP URL
+    // ========================================
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyjWqWKKpDFKnWUtG1y9qEdpUu4p6zw_Po5ozPH8HuVaq2d9UcDNaabzqAEpBCu-lAduA/exec';
+
+    // ========================================
+    // GLOBAL STATE
+    // ========================================
+    const state = {
+      isAuthenticated: false,
+      currentTab: 'main',
+      profile: {
+        pageTitle: 'SK ADIN',
+        avatarUrl: 'https://i.postimg.cc/qBcGF2Ww/Logo-SK-Adin.png',
+        avatarShape: 'circle',
+        description: 'Pautan link penting kegunaan warga sekolah.',
+        bgColor: '#ffffff',
+        textColor: '#000000'
+      },
+      links: [],
+      categories: [],
+      hasUnsavedChanges: false
+    };
+
+    // ========================================
+    // UTILITY FUNCTIONS
+    // ========================================
+    function showElement(elementId) {
+      const element = document.getElementById(elementId);
+      if (element) element.classList.remove('hidden');
+    }
+
+    function hideElement(elementId) {
+      const element = document.getElementById(elementId);
+      if (element) element.classList.add('hidden');
+    }
+
+    function showNotification(message, type) {
+      const toast = document.getElementById('notificationToast');
+      const messageEl = document.getElementById('notificationMessage');
+      
+      toast.className = 'fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50';
+      toast.classList.add(type === 'success' ? 'bg-green-500' : 'bg-red-500');
+      
+      messageEl.textContent = message;
+      showElement('notificationToast');
+      
+      setTimeout(() => hideElement('notificationToast'), 3000);
+    }
+
+    function showLoading(message) {
+      document.getElementById('loadingMessage').textContent = message;
+      showElement('loadingOverlay');
+    }
+
+    function hideLoading() {
+      hideElement('loadingOverlay');
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // ========================================
+    // API COMMUNICATION (FETCH)
+    // ========================================
+    async function apiCall(action, data = {}) {
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            action: action,
+            data: JSON.stringify(data)
+          })
+        });
+        
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error('API Error:', error);
+        return { success: false, error: error.message };
+      }
+    }
+
+    async function loadAllData() {
+      showLoading('Memuatkan data dari Google Sheets...');
+      const result = await apiCall('getAllData');
+      hideLoading();
+      
+      if (result.success) {
+        if (result.data.profile) {
+          state.profile = result.data.profile;
+        }
+        state.links = result.data.links || [];
+        state.categories = result.data.categories || [];
+        renderAll();
+      } else {
+        showNotification('Ralat memuatkan data: ' + result.error, 'error');
+      }
+    }
+
+    async function saveProfile() {
+      showLoading('Menyimpan profil...');
+      const result = await apiCall('saveProfile', state.profile);
+      hideLoading();
+      
+      if (result.success) {
+        showNotification('✅ Profil disimpan!', 'success');
+      } else {
+        showNotification('Ralat: ' + result.error, 'error');
+      }
+    }
+
+    async function saveLinks() {
+      showLoading('Menyimpan pautan ke Google Sheets...');
+      const result = await apiCall('saveLinks', state.links);
+      hideLoading();
+      
+      if (result.success) {
+        showNotification('✅ Pautan disimpan!', 'success');
+        state.hasUnsavedChanges = false;
+        renderDashboardStats();
+      } else {
+        showNotification('Ralat: ' + result.error, 'error');
+      }
+    }
+
+    async function saveCategories() {
+      showLoading('Menyimpan kategori ke Google Sheets...');
+      const result = await apiCall('saveCategories', state.categories);
+      hideLoading();
+      
+      if (result.success) {
+        showNotification('✅ Kategori disimpan!', 'success');
+        renderDashboardStats();
+      } else {
+        showNotification('Ralat: ' + result.error, 'error');
+      }
+    }
+
+    async function verifyPassword(password) {
+      const result = await apiCall('verifyPassword', { password: password });
+      return result.isValid;
+    }
+
+    // ========================================
+    // RENDER FUNCTIONS
+    // ========================================
+    function renderAll() {
+      renderPublicView();
+      renderPreview();
+      renderDashboardStats();
+      
+      if (state.currentTab === 'links') renderLinksEditor();
+      else if (state.currentTab === 'appearance') renderAppearance();
+      else if (state.currentTab === 'bulk') renderBulkLinks();
+      else if (state.currentTab === 'categories') renderCategories();
+    }
+
+    function renderPublicView() {
+      const publicView = document.getElementById('publicView');
+      publicView.style.backgroundColor = state.profile.bgColor;
+      
+      const avatarEl = document.getElementById('publicAvatar');
+      avatarEl.className = 'w-24 h-24 mx-auto mb-4 flex items-center justify-center overflow-hidden bg-white bg-opacity-20';
+      avatarEl.classList.add(state.profile.avatarShape === 'square' ? 'rounded-lg' : 'rounded-full');
+      if (state.profile.avatarUrl) {
+        avatarEl.innerHTML = `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="Avatar" class="w-full h-full object-cover" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-user text-white text-3xl\\'></i>';">`;
+      } else {
+        avatarEl.innerHTML = `<i class="fas fa-user text-white text-3xl"></i>`;
+      }
+      
+      const titleEl = document.getElementById('publicTitle');
+      titleEl.textContent = state.profile.pageTitle || '@username';
+      titleEl.style.color = state.profile.textColor;
+      
+      const descEl = document.getElementById('publicDescription');
+      if (state.profile.description) {
+        descEl.textContent = state.profile.description;
+        descEl.style.color = state.profile.textColor;
+        showElement('publicDescription');
+      } else {
+        hideElement('publicDescription');
+      }
+      
+      const categoriesContainer = document.getElementById('publicCategoriesContainer');
+      const activeCategories = state.categories.filter(cat => cat.active);
+      const activeLinks = state.links.filter(link => link.active);
+      const linksWithoutCategory = activeLinks.filter(link => !link.categoryId);
+      
+      if (activeLinks.length > 0) {
+        categoriesContainer.innerHTML = '';
+        
+        if (linksWithoutCategory.length > 0) {
+          linksWithoutCategory.forEach(link => {
+            const linkEl = document.createElement('a');
+            linkEl.href = link.url;
+            linkEl.target = '_blank';
+            linkEl.rel = 'noopener noreferrer';
+            linkEl.className = 'link-item block w-full py-3 px-4 rounded-lg text-center font-semibold shadow-sm mb-3';
+            linkEl.style.backgroundColor = link.color || '#3b82f6';
+            linkEl.style.color = link.textColor || '#ffffff';
+            linkEl.textContent = link.title || 'Pautan Tanpa Tajuk';
+            
+            categoriesContainer.appendChild(linkEl);
+          });
+        }
+        
+        activeCategories.forEach(category => {
+          const categoryLinks = activeLinks.filter(link => link.categoryId === category.id);
+          if (categoryLinks.length > 0) {
+            const categorySection = document.createElement('div');
+            categorySection.className = 'mb-4';
+            
+            const categoryBtn = document.createElement('button');
+            categoryBtn.className = 'w-full py-3 px-4 rounded-lg font-semibold shadow-sm flex items-center justify-between transition-all';
+            categoryBtn.style.backgroundColor = category.color || '#3b82f6';
+            categoryBtn.style.color = category.textColor || '#ffffff';
+            categoryBtn.innerHTML = `
+              <span>${escapeHtml(category.name)}</span>
+              <i class="fas fa-plus category-icon" data-category-id="${category.id}"></i>
+            `;
+            
+            const linksContainer = document.createElement('div');
+            linksContainer.className = 'mt-3 flex flex-col gap-2 hidden';
+            linksContainer.id = `public-category-links-${category.id}`;
+            
+            categoryLinks.forEach(link => {
+              const linkEl = document.createElement('a');
+              linkEl.href = link.url;
+              linkEl.target = '_blank';
+              linkEl.rel = 'noopener noreferrer';
+              linkEl.className = 'link-item block w-full py-2 px-3 rounded-lg text-center font-semibold shadow-sm text-sm';
+              linkEl.style.backgroundColor = link.color || '#3b82f6';
+              linkEl.style.color = link.textColor || '#ffffff';
+              linkEl.textContent = link.title || 'Pautan Tanpa Tajuk';
+              
+              linksContainer.appendChild(linkEl);
+            });
+            
+            categoryBtn.addEventListener('click', function() {
+              const icon = this.querySelector('.category-icon');
+              linksContainer.classList.toggle('hidden');
+              
+              if (linksContainer.classList.contains('hidden')) {
+                icon.className = 'fas fa-plus category-icon';
+              } else {
+                icon.className = 'fas fa-minus category-icon';
+              }
+            });
+            
+            categorySection.appendChild(categoryBtn);
+            categorySection.appendChild(linksContainer);
+            categoriesContainer.appendChild(categorySection);
+          }
+        });
+        
+        showElement('publicCategoriesContainer');
+        hideElement('publicEmptyState');
+      } else {
+        hideElement('publicCategoriesContainer');
+        const emptyState = document.getElementById('publicEmptyState');
+        const emptyIcon = emptyState.querySelector('i');
+        const emptyText = emptyState.querySelector('p');
+        if (emptyIcon) emptyIcon.style.color = state.profile.textColor;
+        if (emptyText) emptyText.style.color = state.profile.textColor;
+        showElement('publicEmptyState');
+      }
+    }
+
+    function renderPreview() {
+      const previewContent = document.getElementById('previewContent');
+      previewContent.style.backgroundColor = state.profile.bgColor;
+      
+      const previewAvatar = document.getElementById('previewAvatar');
+      previewAvatar.className = 'w-12 h-12 mx-auto mb-2 flex items-center justify-center overflow-hidden bg-white bg-opacity-20';
+      previewAvatar.classList.add(state.profile.avatarShape === 'square' ? 'rounded-lg' : 'rounded-full');
+      if (state.profile.avatarUrl) {
+        previewAvatar.innerHTML = `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="Avatar" class="w-full h-full object-cover" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-user text-white text-base\\'></i>';">`;
+      } else {
+        previewAvatar.innerHTML = `<i class="fas fa-user text-white text-base"></i>`;
+      }
+      
+      const previewTitle = document.getElementById('previewTitle');
+      previewTitle.textContent = state.profile.pageTitle || '@username';
+      previewTitle.style.color = state.profile.textColor;
+      
+      const previewDesc = document.getElementById('previewDescription');
+      if (state.profile.description) {
+        previewDesc.textContent = state.profile.description;
+        previewDesc.style.color = state.profile.textColor;
+        previewDesc.style.opacity = '0.9';
+        showElement('previewDescription');
+      } else {
+        hideElement('previewDescription');
+      }
+      
+      const categoriesContainer = document.getElementById('previewCategoriesContainer');
+      const activeCategories = state.categories.filter(cat => cat.active);
+      const activeLinks = state.links.filter(link => link.active);
+      const linksWithoutCategory = activeLinks.filter(link => !link.categoryId);
+      
+      if (activeLinks.length > 0) {
+        categoriesContainer.innerHTML = '';
+        
+        if (linksWithoutCategory.length > 0) {
+          linksWithoutCategory.forEach(link => {
+            const linkEl = document.createElement('a');
+            linkEl.href = link.url;
+            linkEl.target = '_blank';
+            linkEl.rel = 'noopener noreferrer';
+            linkEl.className = 'link-item block w-full py-1 px-2 rounded text-center font-semibold shadow-sm text-[7px] mb-1';
+            linkEl.style.backgroundColor = link.color || '#3b82f6';
+            linkEl.style.color = link.textColor || '#ffffff';
+            linkEl.textContent = link.title || 'Pautan Tanpa Tajuk';
+            
+            categoriesContainer.appendChild(linkEl);
+          });
+        }
+        
+        activeCategories.forEach(category => {
+          const categoryLinks = activeLinks.filter(link => link.categoryId === category.id);
+          if (categoryLinks.length > 0) {
+            const categorySection = document.createElement('div');
+            categorySection.className = 'mb-2';
+            
+            const categoryBtn = document.createElement('button');
+            categoryBtn.className = 'w-full py-1 px-2 rounded text-[7px] font-semibold shadow-sm flex items-center justify-between transition-all';
+            categoryBtn.style.backgroundColor = category.color || '#3b82f6';
+            categoryBtn.style.color = category.textColor || '#ffffff';
+            categoryBtn.innerHTML = `
+              <span>${escapeHtml(category.name)}</span>
+              <i class="fas fa-plus preview-category-icon text-[6px]" data-category-id="${category.id}"></i>
+            `;
+            
+            const linksContainer = document.createElement('div');
+            linksContainer.className = 'mt-1 flex flex-col gap-1 hidden';
+            linksContainer.id = `preview-category-links-${category.id}`;
+            
+            categoryLinks.forEach(link => {
+              const linkEl = document.createElement('a');
+              linkEl.href = link.url;
+              linkEl.target = '_blank';
+              linkEl.rel = 'noopener noreferrer';
+              linkEl.className = 'link-item block w-full py-1 px-2 rounded text-center font-semibold shadow-sm text-[6px]';
+              linkEl.style.backgroundColor = link.color || '#3b82f6';
+              linkEl.style.color = link.textColor || '#ffffff';
+              linkEl.textContent = link.title || 'Pautan Tanpa Tajuk';
+              
+              linksContainer.appendChild(linkEl);
+            });
+            
+            categoryBtn.addEventListener('click', function() {
+              const icon = this.querySelector('.preview-category-icon');
+              linksContainer.classList.toggle('hidden');
+              
+              if (linksContainer.classList.contains('hidden')) {
+                icon.className = 'fas fa-plus preview-category-icon text-[6px]';
+              } else {
+                icon.className = 'fas fa-minus preview-category-icon text-[6px]';
+              }
+            });
+            
+            categorySection.appendChild(categoryBtn);
+            categorySection.appendChild(linksContainer);
+            categoriesContainer.appendChild(categorySection);
+          }
+        });
+        
+        showElement('previewCategoriesContainer');
+        hideElement('previewEmptyState');
+      } else {
+        hideElement('previewCategoriesContainer');
+        showElement('previewEmptyState');
+      }
+    }
+
+    function renderDashboardStats() {
+      const totalLinks = state.links.length;
+      const activeLinks = state.links.filter(l => l.active).length;
+      const totalCategories = state.categories.length;
+      
+      document.getElementById('statTotalLinks').textContent = totalLinks;
+      document.getElementById('statActiveLinks').textContent = activeLinks;
+      document.getElementById('statTotalCategories').textContent = totalCategories;
+      
+      const tableContainer = document.getElementById('linksTableContainer');
+      if (state.links.length === 0) {
+        tableContainer.innerHTML = '<div class="text-center py-8 text-gray-500"><i class="fas fa-link text-4xl mb-2 text-gray-300"></i><p>Tiada pautan dibuat lagi</p></div>';
+      } else {
+        let tableHTML = '<div class="overflow-x-auto"><table class="w-full"><thead class="border-b"><tr><th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Tajuk</th><th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Pautan</th><th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Kategori</th><th class="text-center py-3 px-4 text-sm font-semibold text-gray-600">Status</th></tr></thead><tbody>';
+        
+        state.links.forEach(link => {
+          const statusClass = link.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600';
+          const statusText = link.active ? 'Aktif' : 'Tidak Aktif';
+          const category = state.categories.find(c => c.id === link.categoryId);
+          const categoryName = category ? category.name : '-';
+          tableHTML += `<tr class="border-b hover:bg-gray-50"><td class="py-3 px-4 font-medium">${escapeHtml(link.title || 'Tanpa Tajuk')}</td><td class="py-3 px-4 text-sm text-gray-600 truncate max-w-xs">${escapeHtml(link.url)}</td><td class="py-3 px-4 text-sm text-gray-600">${escapeHtml(categoryName)}</td><td class="py-3 px-4 text-center"><span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${statusText}</span></td></tr>`;
+        });
+        
+        tableHTML += '</tbody></table></div>';
+        tableContainer.innerHTML = tableHTML;
+      }
+    }
+
+    function renderAppearance() {
+      const avatarPreview = document.getElementById('avatarPreview');
+      avatarPreview.className = 'w-20 h-20 flex items-center justify-center overflow-hidden bg-gray-200';
+      avatarPreview.classList.add(state.profile.avatarShape === 'square' ? 'rounded-lg' : 'rounded-full');
+      if (state.profile.avatarUrl) {
+        avatarPreview.innerHTML = `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="Avatar" class="w-full h-full object-cover" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-user text-gray-400 text-3xl\\'></i>';">`;
+      } else {
+        avatarPreview.innerHTML = `<i class="fas fa-user text-gray-400 text-3xl"></i>`;
+      }
+      
+      document.getElementById('avatarUrlInput').value = state.profile.avatarUrl || 'https://i.postimg.cc/qBcGF2Ww/Logo-SK-Adin.png';
+      document.getElementById('shapeCircleBtn').className = 'avatar-shape-btn px-4 py-2 rounded-lg font-semibold transition-colors ' + (state.profile.avatarShape === 'circle' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700');
+      document.getElementById('shapeSquareBtn').className = 'avatar-shape-btn px-4 py-2 rounded-lg font-semibold transition-colors ' + (state.profile.avatarShape === 'square' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700');
+      
+      document.getElementById('pageTitleInput').value = state.profile.pageTitle;
+      document.getElementById('descriptionInput').value = state.profile.description;
+      document.getElementById('bgColorPicker').value = state.profile.bgColor;
+      document.getElementById('bgColorInput').value = state.profile.bgColor;
+      document.getElementById('textColorPicker').value = state.profile.textColor;
+      document.getElementById('textColorInput').value = state.profile.textColor;
+    }
+
+    function updateLinkPreviewBox(index) {
+      const link = state.links[index];
+      const previewBox = document.querySelector(`.link-preview-box[data-index="${index}"]`);
+      if (previewBox) {
+        previewBox.style.backgroundColor = link.color || '#3b82f6';
+        previewBox.style.color = link.textColor || '#ffffff';
+      }
+    }
+
+    function renderLinksEditor() {
+      const container = document.getElementById('linksEditorContainer');
+      
+      if (state.links.length === 0) {
+        container.innerHTML = '<div class="bg-white rounded-lg shadow p-12 text-center"><i class="fas fa-link text-gray-300 text-6xl mb-4"></i><h3 class="text-xl font-semibold text-gray-800 mb-2">Tiada pautan lagi</h3><p class="text-gray-600 mb-6">Mulakan dengan menambah pautan pertama anda</p><button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 inline-flex items-center" onclick="addLink()"><i class="fas fa-plus mr-2"></i>Buat Pautan Pertama</button></div>';
+        return;
+      }
+      
+      container.innerHTML = '<div class="space-y-4" id="linksEditorList"></div>';
+      const listContainer = document.getElementById('linksEditorList');
+      
+      state.links.forEach((link, index) => {
+        const linkCard = document.createElement('div');
+        linkCard.className = 'bg-white rounded-lg shadow p-6';
+        
+        let categoryOptions = '<option value="">-- Tiada Kategori --</option>';
+        state.categories.forEach(cat => {
+          const selected = link.categoryId === cat.id ? 'selected' : '';
+          categoryOptions += `<option value="${cat.id}" ${selected}>${escapeHtml(cat.name)}</option>`;
+        });
+        
+        linkCard.innerHTML = `
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <i class="fas fa-grip-vertical text-gray-400"></i>
+              <span class="font-semibold text-gray-700">Pautan #${index + 1}</span>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button class="move-up-btn text-gray-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}" data-index="${index}" ${index === 0 ? 'disabled' : ''}>
+                <i class="fas fa-arrow-up"></i>
+              </button>
+              
+              <button class="move-down-btn text-gray-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors ${index === state.links.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" data-index="${index}" ${index === state.links.length - 1 ? 'disabled' : ''}>
+                <i class="fas fa-arrow-down"></i>
+              </button>
+              
+              <label class="flex items-center cursor-pointer ml-2">
+                <span class="text-sm text-gray-600 mr-2">Aktif</span>
+                <div class="toggle-switch ${link.active ? 'active' : ''}" data-index="${index}"></div>
+              </label>
+              
+              <button class="delete-link-btn text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition-colors ml-2" data-index="${index}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <label class="block text-gray-700 text-sm font-semibold mb-2">Kategori</label>
+              <select class="link-category-select w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}">
+                ${categoryOptions}
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 text-sm font-semibold mb-2">Tajuk</label>
+              <input type="text" class="link-title-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}" value="${escapeHtml(link.title)}" placeholder="Masukkan tajuk pautan">
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 text-sm font-semibold mb-2">Pautan</label>
+              <input type="url" class="link-url-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}" value="${escapeHtml(link.url)}" placeholder="https://contoh.com">
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 text-sm font-semibold mb-2">Warna Butang</label>
+              <div class="flex gap-3">
+                <input type="color" class="link-color-picker w-16 h-10 border border-gray-300 rounded cursor-pointer" data-index="${index}" value="${link.color || '#3b82f6'}">
+                <input type="text" class="link-color-input flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}" value="${link.color || '#3b82f6'}" placeholder="#3b82f6">
+                <div class="link-preview-box w-24 h-10 rounded-lg border border-gray-300 flex items-center justify-center text-xs font-semibold" data-index="${index}" style="background-color: ${link.color || '#3b82f6'}; color: ${link.textColor || '#ffffff'}">Pratonton</div>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 text-sm font-semibold mb-2">Warna Teks</label>
+              <div class="flex gap-3">
+                <input type="color" class="link-text-color-picker w-16 h-10 border border-gray-300 rounded cursor-pointer" data-index="${index}" value="${link.textColor || '#ffffff'}">
+                <input type="text" class="link-text-color-input flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}" value="${link.textColor || '#ffffff'}" placeholder="#ffffff">
+              </div>
+            </div>
+          </div>
+        `;
+        listContainer.appendChild(linkCard);
+      });
+      
+      attachLinkEditorListeners();
+    }
+
+    function renderBulkLinks() {
+      const tableBody = document.getElementById('bulkLinksTableBody');
+      const emptyState = document.getElementById('bulkEmptyState');
+      
+      if (state.links.length === 0) {
+        tableBody.innerHTML = '';
+        showElement('bulkEmptyState');
+        return;
+      }
+      
+      hideElement('bulkEmptyState');
+      tableBody.innerHTML = '';
+      
+      state.links.forEach((link, index) => {
+        const row = document.createElement('tr');
+        row.className = 'border-b hover:bg-gray-50';
+        
+        let categoryOptions = '<option value="">-- Tiada Kategori --</option>';
+        state.categories.forEach(cat => {
+          const selected = link.categoryId === cat.id ? 'selected' : '';
+          categoryOptions += `<option value="${cat.id}" ${selected}>${escapeHtml(cat.name)}</option>`;
+        });
+        
+        row.innerHTML = `
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <button class="bulk-move-up text-gray-600 hover:text-blue-600 p-1 ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}" data-index="${index}" ${index === 0 ? 'disabled' : ''}>
+                <i class="fas fa-arrow-up"></i>
+              </button>
+              <button class="bulk-move-down text-gray-600 hover:text-blue-600 p-1 ${index === state.links.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" data-index="${index}" ${index === state.links.length - 1 ? 'disabled' : ''}>
+                <i class="fas fa-arrow-down"></i>
+              </button>
+              <span class="font-mono text-sm text-gray-600">#${index + 1}</span>
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            <input type="checkbox" class="bulk-active-checkbox w-5 h-5 text-blue-600 rounded cursor-pointer" data-index="${index}" ${link.active ? 'checked' : ''}>
+          </td>
+          <td class="px-4 py-3" style="min-width: 150px;">
+            <select class="bulk-category-select w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}">
+              ${categoryOptions}
+            </select>
+          </td>
+          <td class="px-4 py-3" style="min-width: 200px;">
+            <input type="text" class="bulk-title-input w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}" value="${escapeHtml(link.title)}" placeholder="Tajuk pautan" style="word-wrap: break-word; white-space: normal;">
+          </td>
+          <td class="px-4 py-3">
+            <input type="url" class="bulk-url-input w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}" value="${escapeHtml(link.url)}" placeholder="https://">
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <input type="color" class="bulk-color-picker w-10 h-10 border border-gray-300 rounded cursor-pointer" data-index="${index}" value="${link.color || '#3b82f6'}">
+              <input type="text" class="bulk-color-input w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}" value="${link.color || '#3b82f6'}">
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <input type="color" class="bulk-text-color-picker w-10 h-10 border border-gray-300 rounded cursor-pointer" data-index="${index}" value="${link.textColor || '#ffffff'}">
+              <input type="text" class="bulk-text-color-input w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}" value="${link.textColor || '#ffffff'}">
+            </div>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <button class="bulk-delete-btn text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded" data-index="${index}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+      
+      attachBulkListeners();
+    }
+
+    function renderCategories() {
+      const container = document.getElementById('categoriesListContainer');
+      
+      if (state.categories.length === 0) {
+        container.innerHTML = '<div class="bg-white rounded-lg shadow p-12 text-center"><i class="fas fa-folder text-gray-300 text-6xl mb-4"></i><h3 class="text-xl font-semibold text-gray-800 mb-2">Tiada kategori lagi</h3><p class="text-gray-600 mb-6">Buat kategori pertama untuk susun pautan anda</p><button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 inline-flex items-center" onclick="addCategory()"><i class="fas fa-plus mr-2"></i>Buat Kategori Pertama</button></div>';
+        return;
+      }
+      
+      container.innerHTML = '<div class="space-y-4" id="categoriesEditorList"></div>';
+      const listContainer = document.getElementById('categoriesEditorList');
+      
+      state.categories.forEach((category, index) => {
+        const categoryCard = document.createElement('div');
+        categoryCard.className = 'bg-white rounded-lg shadow p-6';
+        categoryCard.innerHTML = `
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3 flex-1">
+              <i class="fas fa-grip-vertical text-gray-400"></i>
+              <div class="flex-1">
+                <input type="text" class="category-name-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-lg" data-index="${index}" value="${escapeHtml(category.name)}" placeholder="Nama Kategori">
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2 ml-4">
+              <button class="category-move-up-btn text-gray-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}" data-index="${index}" ${index === 0 ? 'disabled' : ''}>
+                <i class="fas fa-arrow-up"></i>
+              </button>
+              
+              <button class="category-move-down-btn text-gray-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors ${index === state.categories.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" data-index="${index}" ${index === state.categories.length - 1 ? 'disabled' : ''}>
+                <i class="fas fa-arrow-down"></i>
+              </button>
+              
+              <label class="flex items-center cursor-pointer ml-2">
+                <span class="text-sm text-gray-600 mr-2">Aktif</span>
+                <div class="category-toggle-switch toggle-switch ${category.active ? 'active' : ''}" data-index="${index}"></div>
+              </label>
+              
+              <button class="delete-category-btn text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition-colors ml-2" data-index="${index}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 text-sm font-semibold mb-2">Warna Butang</label>
+              <div class="flex gap-3">
+                <input type="color" class="category-color-picker w-16 h-10 border border-gray-300 rounded cursor-pointer" data-index="${index}" value="${category.color || '#3b82f6'}">
+                <input type="text" class="category-color-input flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}" value="${category.color || '#3b82f6'}" placeholder="#3b82f6">
+                <div class="category-preview-box w-24 h-10 rounded-lg border border-gray-300 flex items-center justify-center text-xs font-semibold" data-index="${index}" style="background-color: ${category.color || '#3b82f6'}; color: ${category.textColor || '#ffffff'}">Pratonton</div>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 text-sm font-semibold mb-2">Warna Teks</label>
+              <div class="flex gap-3">
+                <input type="color" class="category-text-color-picker w-16 h-10 border border-gray-300 rounded cursor-pointer" data-index="${index}" value="${category.textColor || '#ffffff'}">
+                <input type="text" class="category-text-color-input flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" data-index="${index}" value="${category.textColor || '#ffffff'}" placeholder="#ffffff">
+              </div>
+            </div>
+          </div>
+        `;
+        listContainer.appendChild(categoryCard);
+      });
+      
+      attachCategoriesListeners();
+    }
+
+    // ========================================
+    // ACTION FUNCTIONS
+    // ========================================
+    function addLink() {
+      if (state.links.length >= 999) {
+        showNotification('⚠️ Had maksimum 999 pautan dicapai!', 'error');
+        return;
+      }
+      
+      state.links.push({
+        id: 'link_' + Date.now(),
+        title: 'Pautan Baharu',
+        url: 'https://',
+        active: true,
+        color: '#3b82f6',
+        textColor: '#ffffff',
+        categoryId: null
+      });
+      renderLinksEditor();
+      renderPreview();
+    }
+
+    function deleteLink(index) {
+      if (confirm('Adakah anda pasti mahu memadam pautan ini?')) {
+        state.links.splice(index, 1);
+        renderLinksEditor();
+        renderPreview();
+      }
+    }
+
+    function moveLink(index, direction) {
+      if (direction === 'up' && index > 0) {
+        [state.links[index - 1], state.links[index]] = [state.links[index], state.links[index - 1]];
+      } else if (direction === 'down' && index < state.links.length - 1) {
+        [state.links[index], state.links[index + 1]] = [state.links[index + 1], state.links[index]];
+      }
+      
+      renderLinksEditor();
+      renderPreview();
+    }
+
+    function addBulkRow() {
+      if (state.links.length >= 999) {
+        showNotification('⚠️ Had maksimum 999 pautan dicapai!', 'error');
+        return;
+      }
+      
+      state.links.push({
+        id: 'link_' + Date.now(),
+        title: 'Pautan Baharu',
+        url: 'https://',
+        active: true,
+        color: '#3b82f6',
+        textColor: '#ffffff',
+        categoryId: null
+      });
+      
+      renderBulkLinks();
+      renderPreview();
+    }
+
+    function moveLinkBulk(index, direction) {
+      if (direction === 'up' && index > 0) {
+        [state.links[index - 1], state.links[index]] = [state.links[index], state.links[index - 1]];
+      } else if (direction === 'down' && index < state.links.length - 1) {
+        [state.links[index], state.links[index + 1]] = [state.links[index + 1], state.links[index]];
+      }
+      
+      renderBulkLinks();
+      renderPreview();
+    }
+
+    function deleteLinkBulk(index) {
+      if (confirm('Adakah anda pasti mahu memadam pautan ini?')) {
+        state.links.splice(index, 1);
+        renderBulkLinks();
+        renderPreview();
+      }
+    }
+
+    function saveBulkLinks() {
+      saveLinks();
+    }
+
+    function addCategory() {
+      if (state.categories.length >= 999) {
+        showNotification('⚠️ Had maksimum 999 kategori dicapai!', 'error');
+        return;
+      }
+      
+      state.categories.push({
+        id: 'category_' + Date.now(),
+        name: 'Kategori Baharu',
+        active: true,
+        color: '#3b82f6',
+        textColor: '#ffffff'
+      });
+      
+      renderCategories();
+      renderPreview();
+    }
+
+    function deleteCategory(index) {
+      if (confirm('Adakah anda pasti mahu memadam kategori ini? Pautan dalam kategori ini akan menjadi tanpa kategori.')) {
+        const categoryId = state.categories[index].id;
+        
+        state.links.forEach(link => {
+          if (link.categoryId === categoryId) {
+            link.categoryId = null;
+          }
+        });
+        
+        state.categories.splice(index, 1);
+        renderCategories();
+        renderPreview();
+        renderBulkLinks();
+        renderLinksEditor();
+      }
+    }
+
+    function moveCategory(index, direction) {
+      if (direction === 'up' && index > 0) {
+        [state.categories[index - 1], state.categories[index]] = [state.categories[index], state.categories[index - 1]];
+      } else if (direction === 'down' && index < state.categories.length - 1) {
+        [state.categories[index], state.categories[index + 1]] = [state.categories[index + 1], state.categories[index]];
+      }
+      
+      renderCategories();
+      renderPreview();
+    }
+
+    function switchTab(tabName) {
+      state.currentTab = tabName;
+      
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+      });
+      
+      document.querySelectorAll('.nav-item').forEach(nav => {
+        nav.classList.remove('active');
+      });
+      
+      const tabId = tabName + 'Tab';
+      showElement(tabId);
+      
+      const activeNav = document.querySelector(`.nav-item[data-tab="${tabName}"]`);
+      if (activeNav) {
+        activeNav.classList.add('active');
+      }
+      
+      if (tabName === 'links') {
+        renderLinksEditor();
+      } else if (tabName === 'appearance') {
+        renderAppearance();
+      } else if (tabName === 'bulk') {
+        renderBulkLinks();
+      } else if (tabName === 'categories') {
+        renderCategories();
+      } else if (tabName === 'main') {
+        renderDashboardStats();
+      }
+    }
+
+    // ========================================
+    // ATTACH EVENT LISTENERS - LINKS EDITOR
+    // ========================================
+    function attachLinkEditorListeners() {
+      document.querySelectorAll('.link-category-select').forEach(select => {
+        select.addEventListener('change', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].categoryId = this.value || null;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.toggle-switch').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].active = !state.links[index].active;
+          this.classList.toggle('active');
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.delete-link-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const index = parseInt(this.dataset.index);
+          deleteLink(index);
+        });
+      });
+      
+      document.querySelectorAll('.link-title-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].title = this.value;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.link-url-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].url = this.value;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.link-color-picker').forEach(picker => {
+        picker.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].color = this.value;
+          const colorInput = document.querySelector(`.link-color-input[data-index="${index}"]`);
+          if (colorInput) colorInput.value = this.value;
+          updateLinkPreviewBox(index);
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.link-color-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].color = this.value;
+          const colorPicker = document.querySelector(`.link-color-picker[data-index="${index}"]`);
+          if (colorPicker) colorPicker.value = this.value;
+          updateLinkPreviewBox(index);
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.link-text-color-picker').forEach(picker => {
+        picker.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].textColor = this.value;
+          const colorInput = document.querySelector(`.link-text-color-input[data-index="${index}"]`);
+          if (colorInput) colorInput.value = this.value;
+          updateLinkPreviewBox(index);
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.link-text-color-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].textColor = this.value;
+          const colorPicker = document.querySelector(`.link-text-color-picker[data-index="${index}"]`);
+          if (colorPicker) colorPicker.value = this.value;
+          updateLinkPreviewBox(index);
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.move-up-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (!this.disabled) {
+            const index = parseInt(this.dataset.index);
+            moveLink(index, 'up');
+          }
+        });
+      });
+      
+      document.querySelectorAll('.move-down-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (!this.disabled) {
+            const index = parseInt(this.dataset.index);
+            moveLink(index, 'down');
+          }
+        });
+      });
+    }
+
+    function attachBulkListeners() {
+      document.querySelectorAll('.bulk-active-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].active = this.checked;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.bulk-category-select').forEach(select => {
+        select.addEventListener('change', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].categoryId = this.value || null;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.bulk-title-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].title = this.value;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.bulk-url-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].url = this.value;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.bulk-color-picker').forEach(picker => {
+        picker.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].color = this.value;
+          const input = document.querySelector(`.bulk-color-input[data-index="${index}"]`);
+          if (input) input.value = this.value;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.bulk-color-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].color = this.value;
+          const picker = document.querySelector(`.bulk-color-picker[data-index="${index}"]`);
+          if (picker) picker.value = this.value;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.bulk-text-color-picker').forEach(picker => {
+        picker.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].textColor = this.value;
+          const input = document.querySelector(`.bulk-text-color-input[data-index="${index}"]`);
+          if (input) input.value = this.value;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.bulk-text-color-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.links[index].textColor = this.value;
+          const picker = document.querySelector(`.bulk-text-color-picker[data-index="${index}"]`);
+          if (picker) picker.value = this.value;
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.bulk-move-up').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (!this.disabled) {
+            const index = parseInt(this.dataset.index);
+            moveLinkBulk(index, 'up');
+          }
+        });
+      });
+      
+      document.querySelectorAll('.bulk-move-down').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (!this.disabled) {
+            const index = parseInt(this.dataset.index);
+            moveLinkBulk(index, 'down');
+          }
+        });
+      });
+      
+      document.querySelectorAll('.bulk-delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const index = parseInt(this.dataset.index);
+          deleteLinkBulk(index);
+        });
+      });
+    }
+
+    function attachCategoriesListeners() {
+      document.querySelectorAll('.category-name-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.categories[index].name = this.value;
+          renderPreview();
+          renderBulkLinks();
+          renderLinksEditor();
+        });
+      });
+      
+      document.querySelectorAll('.category-toggle-switch').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+          const index = parseInt(this.dataset.index);
+          state.categories[index].active = !state.categories[index].active;
+          this.classList.toggle('active');
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.category-color-picker').forEach(picker => {
+        picker.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.categories[index].color = this.value;
+          const colorInput = document.querySelector(`.category-color-input[data-index="${index}"]`);
+          if (colorInput) colorInput.value = this.value;
+          
+          const previewBox = document.querySelector(`.category-preview-box[data-index="${index}"]`);
+          if (previewBox) {
+            previewBox.style.backgroundColor = this.value;
+          }
+          
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.category-color-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.categories[index].color = this.value;
+          const colorPicker = document.querySelector(`.category-color-picker[data-index="${index}"]`);
+          if (colorPicker) colorPicker.value = this.value;
+          
+          const previewBox = document.querySelector(`.category-preview-box[data-index="${index}"]`);
+          if (previewBox) {
+            previewBox.style.backgroundColor = this.value;
+          }
+          
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.category-text-color-picker').forEach(picker => {
+        picker.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.categories[index].textColor = this.value;
+          const colorInput = document.querySelector(`.category-text-color-input[data-index="${index}"]`);
+          if (colorInput) colorInput.value = this.value;
+          
+          const previewBox = document.querySelector(`.category-preview-box[data-index="${index}"]`);
+          if (previewBox) {
+            previewBox.style.color = this.value;
+          }
+          
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.category-text-color-input').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.dataset.index);
+          state.categories[index].textColor = this.value;
+          const colorPicker = document.querySelector(`.category-text-color-picker[data-index="${index}"]`);
+          if (colorPicker) colorPicker.value = this.value;
+          
+          const previewBox = document.querySelector(`.category-preview-box[data-index="${index}"]`);
+          if (previewBox) {
+            previewBox.style.color = this.value;
+          }
+          
+          renderPreview();
+        });
+      });
+      
+      document.querySelectorAll('.category-move-up-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (!this.disabled) {
+            const index = parseInt(this.dataset.index);
+            moveCategory(index, 'up');
+          }
+        });
+      });
+      
+      document.querySelectorAll('.category-move-down-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (!this.disabled) {
+            const index = parseInt(this.dataset.index);
+            moveCategory(index, 'down');
+          }
+        });
+      });
+      
+      document.querySelectorAll('.delete-category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const index = parseInt(this.dataset.index);
+          deleteCategory(index);
+        });
+      });
+    }
+
+    // ========================================
+    // INITIALIZATION
+    // ========================================
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('lockIconBtn').addEventListener('click', function() {
+        showElement('loginModal');
+      });
+      
+      document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const password = document.getElementById('passwordInput').value;
+        
+        const isValid = await verifyPassword(password);
+        if (isValid) {
+          state.isAuthenticated = true;
+          sessionStorage.setItem('linkbuilder_auth', 'true');
+          hideElement('loginModal');
+          hideElement('publicView');
+          showElement('adminDashboard');
+          renderDashboardStats();
+          renderPreview();
+          document.getElementById('passwordInput').value = '';
+          hideElement('loginError');
+          loadAllData();
+        } else {
+          showElement('loginError');
+        }
+      });
+      
+      document.getElementById('cancelLoginBtn').addEventListener('click', function() {
+        hideElement('loginModal');
+        document.getElementById('passwordInput').value = '';
+        hideElement('loginError');
+      });
+      
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        state.isAuthenticated = false;
+        sessionStorage.removeItem('linkbuilder_auth');
+        hideElement('adminDashboard');
+        renderPublicView();
+        showElement('publicView');
+      });
+      
+      document.getElementById('viewLiveBtn').addEventListener('click', function() {
+        hideElement('adminDashboard');
+        renderPublicView();
+        showElement('publicView');
+      });
+      
+      document.getElementById('addLinkBtn').addEventListener('click', function() {
+        addLink();
+      });
+      
+      document.getElementById('saveLinksBtn').addEventListener('click', function() {
+        saveLinks();
+      });
+      
+      document.getElementById('addCategoryBtn').addEventListener('click', function() {
+        addCategory();
+      });
+      
+      document.getElementById('saveCategoriesBtn').addEventListener('click', function() {
+        saveCategories();
+      });
+      
+      document.getElementById('addBulkRowBtn').addEventListener('click', function() {
+        addBulkRow();
+      });
+      
+      document.getElementById('saveBulkBtn').addEventListener('click', function() {
+        saveBulkLinks();
+      });
+      
+      document.querySelectorAll('.nav-item').forEach(nav => {
+        nav.addEventListener('click', function() {
+          const tabName = this.dataset.tab;
+          switchTab(tabName);
+        });
+      });
+      
+      document.querySelectorAll('.quick-action-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const tabName = this.dataset.tab;
+          switchTab(tabName);
+        });
+      });
+      
+      document.getElementById('avatarUrlInput').addEventListener('input', function() {
+        state.profile.avatarUrl = this.value || 'https://i.postimg.cc/qBcGF2Ww/Logo-SK-Adin.png';
+        renderAppearance();
+        renderPreview();
+      });
+      
+      document.getElementById('avatarUrlInput').addEventListener('blur', function() {
+        saveProfile();
+      });
+      
+      document.querySelectorAll('.avatar-shape-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const shape = this.dataset.shape;
+          state.profile.avatarShape = shape;
+          renderAppearance();
+          renderPreview();
+          saveProfile();
+        });
+      });
+      
+      document.getElementById('pageTitleInput').addEventListener('input', function() {
+        state.profile.pageTitle = this.value;
+        renderPreview();
+      });
+      
+      document.getElementById('pageTitleInput').addEventListener('blur', function() {
+        saveProfile();
+      });
+      
+      document.getElementById('descriptionInput').addEventListener('input', function() {
+        state.profile.description = this.value;
+        renderPreview();
+      });
+      
+      document.getElementById('descriptionInput').addEventListener('blur', function() {
+        saveProfile();
+      });
+      
+      document.getElementById('bgColorPicker').addEventListener('input', function() {
+        state.profile.bgColor = this.value;
+        document.getElementById('bgColorInput').value = this.value;
+        renderPreview();
+      });
+      
+      document.getElementById('bgColorPicker').addEventListener('change', function() {
+        saveProfile();
+      });
+      
+      document.getElementById('bgColorInput').addEventListener('input', function() {
+        state.profile.bgColor = this.value;
+        document.getElementById('bgColorPicker').value = this.value;
+        renderPreview();
+      });
+      
+      document.getElementById('bgColorInput').addEventListener('blur', function() {
+        saveProfile();
+      });
+      
+      document.getElementById('textColorPicker').addEventListener('input', function() {
+        state.profile.textColor = this.value;
+        document.getElementById('textColorInput').value = this.value;
+        renderPreview();
+      });
+      
+      document.getElementById('textColorPicker').addEventListener('change', function() {
+        saveProfile();
+      });
+      
+      document.getElementById('textColorInput').addEventListener('input', function() {
+        state.profile.textColor = this.value;
+        document.getElementById('textColorPicker').value = this.value;
+        renderPreview();
+      });
+      
+      document.getElementById('textColorInput').addEventListener('blur', function() {
+        saveProfile();
+      });
+      
+      hideElement('initialLoading');
+      
+      const sessionAuth = sessionStorage.getItem('linkbuilder_auth');
+      if (sessionAuth === 'true') {
+        state.isAuthenticated = true;
+        showElement('adminDashboard');
+        loadAllData();
+      } else {
+        loadAllData();
+        showElement('publicView');
+      }
+    });
+  </script>
+</body>
+</html>
