@@ -1217,19 +1217,33 @@ a { text-decoration: none; }
   }
 
   // ========================================
-  // RENDER: PRATONTON ADMIN (iframe live - tak perlu render manual setiap edit)
+  // RENDER: PRATONTON ADMIN (iframe + postMessage draf-langsung)
   // ========================================
+  let previewFrameReady = false;
+
   function renderAdminPreview() {
-    // Sengaja kosong: pratonton kini iframe live laman sebenar (lihat setupPreviewFrame()).
-    // Ia hanya dimuat semula secara manual (butang) atau bila admin log masuk, supaya
-    // tidak reload berulang kali semasa admin sedang menaip dalam borang.
+    pushPreviewState();
   }
 
   function setupPreviewFrame() {
     const iframe = document.getElementById('previewFrame');
     if (!iframe) return;
+    previewFrameReady = false;
     const baseUrl = window.location.href.split('?')[0];
     iframe.src = baseUrl + '?preview=1&t=' + Date.now();
+  }
+
+  function pushPreviewState() {
+    const iframe = document.getElementById('previewFrame');
+    if (!iframe || !iframe.contentWindow || !previewFrameReady) return;
+    try {
+      iframe.contentWindow.postMessage({
+        type: 'LB_PREVIEW_STATE',
+        profile: state.profile,
+        links: state.links,
+        categories: state.categories
+      }, '*');
+    } catch (e) { /* abaikan - iframe mungkin belum sedia */ }
   }
 
   // ========================================
@@ -1652,8 +1666,23 @@ a { text-decoration: none; }
     if (isPreviewFrame) {
       // Mod pratonton (dimuatkan dalam iframe admin) - sentiasa papar Public View
       document.documentElement.classList.add('is-preview-frame');
-      loadAllData();
       showElement('publicView');
+      renderPublicView(); // paparan awal (kosong/default) sementara tunggu draf dari tetingkap induk
+
+      // Dengar draf state terkini dari tetingkap induk (supaya perubahan belum simpan pun terus nampak)
+      window.addEventListener('message', function (e) {
+        if (!e.data || e.data.type !== 'LB_PREVIEW_STATE') return;
+        state.profile = e.data.profile || state.profile;
+        state.links = e.data.links || [];
+        state.categories = e.data.categories || [];
+        renderPublicView();
+      });
+
+      // Fallback: jika dibuka berasingan (bukan dalam iframe admin) & tiada mesej diterima,
+      // muat data sebenar dari Google Sheets supaya pratonton tetap berguna sendirian.
+      setTimeout(function () {
+        if (state.links.length === 0 && state.categories.length === 0) loadAllData();
+      }, 1200);
     } else {
       const sessionAuth = sessionStorage.getItem('linkbuilder_auth');
       if (sessionAuth === 'true') {
@@ -1664,6 +1693,15 @@ a { text-decoration: none; }
       } else {
         loadAllData();
         showElement('publicView');
+      }
+
+      // Bila iframe pratonton selesai dimuat, terus hantar draf state semasa (termasuk yang belum disimpan)
+      const previewFrameEl = document.getElementById('previewFrame');
+      if (previewFrameEl) {
+        previewFrameEl.addEventListener('load', function () {
+          previewFrameReady = true;
+          pushPreviewState();
+        });
       }
     }
   });
