@@ -546,17 +546,14 @@ a { text-decoration: none; }
 .active-toggle-label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--slate-600); font-weight: 600; }
 
 /* ─────────────────── ADMIN: MOBILE PREVIEW FRAME ─────────────────── */
-.preview-panel { width: 230px; background: var(--slate-100); padding: 16px 12px; flex-shrink: 0; overflow-y: auto; border-left: 1px solid var(--slate-200); }
+.preview-panel { width: 270px; background: var(--slate-100); padding: 16px 14px; flex-shrink: 0; overflow-y: auto; border-left: 1px solid var(--slate-200); }
 @media (max-width: 1280px) { .preview-panel { display: none; } }
 .preview-panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--slate-500); text-align: center; margin-bottom: 10px; }
-.mobile-frame { width: 100%; max-width: 190px; aspect-ratio: 9/18; margin: 0 auto; border: 6px solid var(--slate-900); border-radius: 20px; background: #fff; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+.mobile-frame { width: 100%; max-width: 230px; aspect-ratio: 9/17; margin: 0 auto; border: 6px solid var(--slate-900); border-radius: 20px; background: #fff; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
 .mobile-frame::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 50px; height: 10px; background: var(--slate-900); border-radius: 0 0 8px 8px; z-index: 10; }
 .mobile-content { width: 100%; height: 100%; overflow-y: auto; padding-top: 14px; font-size: 8px; display: flex; }
-.mp-sidebar { width: 26%; background: var(--slate-900); height: 100%; flex-shrink: 0; padding-top: 4px; }
-.mp-sidebar .mp-dot { width: 60%; height: 4px; background: rgba(255,255,255,.5); border-radius: 2px; margin: 4px auto; }
-.mp-sidebar .mp-line { width: 70%; height: 3px; background: rgba(255,255,255,.25); border-radius: 2px; margin: 3px auto; }
-.mp-main { flex: 1; padding: 6px 4px; overflow: hidden; }
-.mp-main .mp-link { border-radius: 4px; padding: 4px 5px; padding-left: 6px; font-size: 6px; font-weight: 700; margin-bottom: 4px; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: #fff; border: 1px solid #e2e8f0; border-left: 2px solid #2563eb; color: #0f172a; }
+.mobile-frame-iframe { width: 100%; height: 100%; border: none; display: block; background: #fff; }
+.preview-panel .btn { font-size: 11.5px; }
 
 @media (max-width: 640px) {
   .content-area { padding: 16px; }
@@ -900,22 +897,18 @@ a { text-decoration: none; }
 
       <!-- PREVIEW PANEL -->
       <div class="preview-panel">
-        <div class="preview-panel-title">Pratonton</div>
+        <div class="preview-panel-title">Pratonton Mobile (Live)</div>
         <div class="mobile-frame">
-          <div class="mobile-content">
-            <div class="mp-sidebar" id="mpSidebar">
-              <div class="mp-dot"></div>
-              <div class="mp-line"></div>
-              <div class="mp-line"></div>
-              <div class="mp-line"></div>
-            </div>
-            <div class="mp-main" id="mpMain"></div>
-          </div>
+          <iframe id="previewFrame" class="mobile-frame-iframe" title="Pratonton laman pautan"></iframe>
         </div>
-        <p style="font-size:10px;color:var(--slate-500);text-align:center;margin-top:10px;">Paparan ringkas sidebar &amp; kategori aktif</p>
+        <button class="btn btn-outline btn-sm" id="refreshPreviewBtn" style="width:100%;justify-content:center;margin-top:10px;">
+          <span class="icon-refresh"></span> Muat Semula Pratonton
+        </button>
+        <p style="font-size:10px;color:var(--slate-500);text-align:center;margin-top:8px;">Paparan sebenar laman awam pada lebar mobile</p>
       </div>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -972,7 +965,8 @@ a { text-decoration: none; }
     'arrow-down': '<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>',
     grip: '<circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/>',
     external: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
-    x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
+    x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+    refresh: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>'
   };
 
   function renderIcons(scope) {
@@ -1059,7 +1053,7 @@ a { text-decoration: none; }
     showLoading('Menyimpan profil...');
     const result = await apiCall('saveProfile', state.profile);
     hideLoading();
-    if (result.success) showToast('Profil disimpan!', 'success');
+    if (result.success) { showToast('Profil disimpan!', 'success'); setupPreviewFrame(); }
     else showToast('Ralat: ' + result.error, 'error');
   }
 
@@ -1072,6 +1066,7 @@ a { text-decoration: none; }
       state.hasUnsavedChanges = false;
       renderDashboardStats();
       renderPublicView();
+      setupPreviewFrame();
     } else {
       showToast('Ralat: ' + result.error, 'error');
     }
@@ -1085,6 +1080,7 @@ a { text-decoration: none; }
       showToast('Kategori disimpan!', 'success');
       renderDashboardStats();
       renderPublicView();
+      setupPreviewFrame();
     } else {
       showToast('Ralat: ' + result.error, 'error');
     }
@@ -1221,30 +1217,19 @@ a { text-decoration: none; }
   }
 
   // ========================================
-  // RENDER: PRATONTON ADMIN (mobile-frame ringkas)
+  // RENDER: PRATONTON ADMIN (iframe live - tak perlu render manual setiap edit)
   // ========================================
   function renderAdminPreview() {
-    const mpMain = document.getElementById('mpMain');
+    // Sengaja kosong: pratonton kini iframe live laman sebenar (lihat setupPreviewFrame()).
+    // Ia hanya dimuat semula secara manual (butang) atau bila admin log masuk, supaya
+    // tidak reload berulang kali semasa admin sedang menaip dalam borang.
+  }
 
-    const activeCategories = state.categories.filter(c => c.active);
-    const activeLinks = state.links.filter(l => l.active);
-    const catsWithLinks = activeCategories.filter(c => activeLinks.some(l => l.categoryId === c.id));
-    const linksNoCat = activeLinks.filter(l => !l.categoryId);
-
-    mpMain.innerHTML = '';
-    if (catsWithLinks.length === 0 && linksNoCat.length === 0) {
-      mpMain.innerHTML = '<p style="font-size:6px;color:#94a3b8;text-align:center;margin-top:20px;">Tiada pautan aktif</p>';
-      return;
-    }
-    const showCat = catsWithLinks[0];
-    const linksShown = showCat ? activeLinks.filter(l => l.categoryId === showCat.id) : linksNoCat.slice(0, 4);
-    linksShown.slice(0, 5).forEach(link => {
-      const div = document.createElement('div');
-      div.className = 'mp-link';
-      div.style.borderLeftColor = link.color || '#3b82f6';
-      div.textContent = link.title || 'Pautan';
-      mpMain.appendChild(div);
-    });
+  function setupPreviewFrame() {
+    const iframe = document.getElementById('previewFrame');
+    if (!iframe) return;
+    const baseUrl = window.location.href.split('?')[0];
+    iframe.src = baseUrl + '?preview=1&t=' + Date.now();
   }
 
   // ========================================
@@ -1599,6 +1584,7 @@ a { text-decoration: none; }
         document.getElementById('passwordInput').value = '';
         hideElement('loginError');
         loadAllData();
+        setupPreviewFrame();
       } else {
         showElement('loginError');
       }
@@ -1623,6 +1609,8 @@ a { text-decoration: none; }
       renderPublicView();
       showElement('publicView');
     });
+
+    document.getElementById('refreshPreviewBtn').addEventListener('click', setupPreviewFrame);
 
     document.getElementById('addLinkBtn').addEventListener('click', addLink);
     document.getElementById('saveLinksBtn').addEventListener('click', saveLinks);
@@ -1658,14 +1646,25 @@ a { text-decoration: none; }
 
     hideElement('initialLoading');
 
-    const sessionAuth = sessionStorage.getItem('linkbuilder_auth');
-    if (sessionAuth === 'true') {
-      state.isAuthenticated = true;
-      showElement('adminDashboard');
-      loadAllData();
-    } else {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isPreviewFrame = urlParams.get('preview') === '1';
+
+    if (isPreviewFrame) {
+      // Mod pratonton (dimuatkan dalam iframe admin) - sentiasa papar Public View
+      document.documentElement.classList.add('is-preview-frame');
       loadAllData();
       showElement('publicView');
+    } else {
+      const sessionAuth = sessionStorage.getItem('linkbuilder_auth');
+      if (sessionAuth === 'true') {
+        state.isAuthenticated = true;
+        showElement('adminDashboard');
+        loadAllData();
+        setupPreviewFrame();
+      } else {
+        loadAllData();
+        showElement('publicView');
+      }
     }
   });
 </script>
